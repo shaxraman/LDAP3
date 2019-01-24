@@ -35,10 +35,9 @@ res = {}
 oper_sys = []
 
 def search_os():
-
+    conn = connect()
+    search_filter = f'(&(objectClass=Computer))'
     for kk in ou:
-        conn = connect()
-        search_filter = f'(&(objectClass=Computer))'
         base1 = f'ou={kk},dc=icore,dc=local'
         conn.search(base1, search_filter, attributes=['operatingSystem'])
         a = 'Всего операционных систем в ou=domain computers', len(conn.response)
@@ -49,7 +48,7 @@ def search_os():
             print(i)
         print('\n\n', a)
         print('Не считая LockedAccounts ', len(oper_sys))
-        conn.unbind()
+    conn.unbind()
     for i in oper_sys:
         #print(res.keys())
         try:
@@ -70,7 +69,7 @@ def search_os():
 def main():
     search_os()
     #[print(i) for i in res.items()]
-    # input('Нажмите любую клавишу для выхода.')
+    input('Нажмите любую клавишу для выхода.')
 
 
 if __name__ == '__main__':
