@@ -1,0 +1,6 @@
+serverName = 'icdc0.icore.local'
+domainName = 'icore'
+#userName = ''
+# password = ''
+base = 'ou=domain users,dc=icore,dc=local'
+base2 = 'ou=domain computers,dc=icore,dc=local'
