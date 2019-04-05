@@ -1,16 +1,65 @@
-#        Поиск свободных номеров из списка
-#        v 1.0
-#        ищет построчно из файла. без букв и пустрых пробелов, энтеров
+import os
+import shutil
 
-file_name = 'number.txt'  # Имя файла, где смотреть номера
-free_num = list(range(700, 861))  # 161 номер   # Диапазон номеров для поиска
+from ldap3 import Server, Connection
+
+base = 'ou=domain users,dc=icore,dc=local'
+serverName = 'icdc0.icore.local'
+domainName = 'icore'
+
+
+def logging():
+    userName = 'python'
+    password = '123456Qq'
+    return userName, password
+
+
+def connect():
+    while True:
+        try:
+            log = logging()  # Вынесли логин и пароль в infa.py
+            server = Server(serverName)
+            conn = Connection(server, read_only=True, user=f'{log[0]}@{domainName}', password=log[1],
+                              auto_bind=True)
+            print(f'Подключение к AD {serverName} под пользователем {log[0]} прошло успешно.\n')
+            return conn
+        except:
+            print('Вы подпустили ошибку☻\n')
+            continue
+        break
+
+
+a = []
+
+
+def search_user():
+    conn = connect()
+    userDN = {}
+    search_filter = f'(&(objectClass=user)(msDS-parentdistname=OU=Domain Users,DC=icore,DC=local))'
+    x = conn.search(base, search_filter, attributes=['telephoneNumber'])
+    if x != False:
+        userDN = conn.response
+        for i in range(len(userDN)):
+            if userDN[i]['attributes']['telephoneNumber']  :
+                a.append(conn.response[i]['attributes']['telephoneNumber'])
+    conn.unbind()
+
+
+
 def main():
-    with open(file_name, 'r', encoding='utf8') as file:
-        for i in file.readlines():
-            if int(i) in free_num:
-                free_num.remove(int(i))
-    print(free_num)
-    print('free numbers - ', len(free_num))
+    search_user()
+    aa = 700
+    bb = 901
+
+    print(f'Добрый день.\nПоиск работает в диапазоне от {aa} до {bb-1} и по {base}.')
+    for i in range(aa, bb):
+        if str(i) in a:
+            continue
+        print(i, end=' ')
+
+    input('E for exit ')
+
+
 
 if __name__ == '__main__':
     main()
