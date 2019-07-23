@@ -5,6 +5,7 @@ from infa import *
 
 
 def connect():
+    """ Подключение к AD """
     while True:
         try:
             log = logging()  # Вынесли логин и пароль в infa.py
@@ -21,6 +22,7 @@ def connect():
 
 
 def search_user(user):
+    """ Поиск пользователя """
     conn = connect()
     userDN = None
     search_filter = f'(&(objectClass=user)(sAMAccountName={user}))'
@@ -31,8 +33,23 @@ def search_user(user):
     print(userDN)
 
 
+def search_email_user(users):
+    """ Поиск почты у списка пользователей """
+    conn = connect()
+    userDN = []
+    for user in users:
+        search_filter = f'(&(objectClass=user)(distinguishedName={user}))'
+        x = conn.search(base, search_filter, attributes=['mail'])
+        if x != False:
+            userDN.append(conn.response[0]['attributes']['mail'])
+
+    conn.unbind()
+    pprint(userDN)
+    pprint(len(userDN))
+
+
 def search_users_in_group(group):
-    """ Поиск участников группы """
+    """ Поиск участников группы. Выводитх их cn """
     conn = connect()
     userDN = None
     search_filter = f'(&(objectClass=group))'
@@ -40,7 +57,7 @@ def search_users_in_group(group):
     if x != False:
         userDN = conn.response[0]['attributes']['member']
     conn.unbind()
-    #pprint(userDN)
+    # pprint(userDN)
     return userDN
 
 
@@ -52,6 +69,7 @@ oper_sys = []
 
 
 def search_os():
+    """ Поиск os по AD """
     conn = connect()
     search_filter = f'(&(objectClass=Computer))'
     for kk in ou:
@@ -84,13 +102,13 @@ def search_os():
     return res
 
 
-def main():
-    search_os()
-
-
 if __name__ == '__main__':
-    # main()
-    all_vpn_users =search_users_in_group('Users_VPN')
+    b = []
+    all_vpn_users = search_users_in_group('Users_VPN')
     for user in all_vpn_users:
         if 'OU=_Retired' not in user:
-            print(user)
+            # a = user.find(',')
+            b.append((user))
+            # search_email_user(user)
+    # print(b)
+    search_email_user(b)
