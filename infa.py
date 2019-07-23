@@ -8,10 +8,9 @@ domainName = 'icore'
 # password = ''
 
 def logging():
-    userName = input('Напишите Ваш логин ')
-    password = getpass.getpass()
-    #userName = 'snezamov'
-    #password = ''
+    userName = 'python'
+    password = '123456Qq'
+
     if '@' in userName:
         return userName[:userName.index('@')], password
     elif '.i' in userName:
@@ -22,3 +21,4 @@ def logging():
 
 base = 'ou=domain users,dc=icore,dc=local'
 base2 = 'ou=domain computers,dc=icore,dc=local'
+base3 = 'CN=Users_VPN,OU=Service Groups,OU=Domain Groups,DC=icore,DC=local'
