@@ -1,5 +1,5 @@
 from pprint import pprint
-from ldap3 import Server, Connection
+from ldap3 import Server, Connection, MODIFY_REPLACE
 
 from infa import *
 
@@ -10,7 +10,7 @@ def connect():
         try:
             log = logging()  # Вынесли логин и пароль в infa.py
             server = Server(serverName)
-            conn = Connection(server, read_only=True, user=f'{log[0]}@{domainName}', password=log[1],
+            conn = Connection(server, read_only=False, user=f'{log[0]}@{domainName}', password=log[1],
                               auto_bind=True)
             print(
                 f'Подключение к AD {serverName} под пользователем {log[0]} прошло успешно.\n')
@@ -19,6 +19,44 @@ def connect():
             print('Вы подпустили ошибку☻\n')
             continue
         break
+
+
+def search_ext1(user):
+    """ Поиск ext1 у конкретного юзера"""
+    conn = connect()
+    userDN = None
+    search_filter = f'(&(objectClass=user)(sAMAccountName={user}))'
+    x = conn.search(base, search_filter, attributes=[
+                    'extensionAttribute1', 'distinguishedName'])
+    if x != False:
+        userDN = (conn.response[0]['attributes']['extensionAttribute1'],
+                  conn.response[0]['attributes']['distinguishedName'])
+    # print(conn.modify('CN=Stanislav Nezamov,OU=Domain Users,DC=icore,DC=local', {'extensionAttribute1': (MODIFY_REPLACE, ['3769'])}))   # замена атрибута
+    print(userDN)
+
+
+def search_ext1_all():
+    """ Ищет всех пользователей и выводит их атрибуты"""
+    conn = connect()
+    all_user = None
+    search_filter = f'(&(objectClass=user))'
+    x = conn.search(base, search_filter, attributes=[
+                    'extensionAttribute1', 'distinguishedName', 'telephoneNumber'])
+    if x != False:
+        all_user = (conn.response)
+    conn.unbind()
+    return all_user
+
+
+def replace_attribute(all_users):
+    """ Принимает список юзеров с их атрибутами (search_ext1_all) и заменяет определенные """
+    conn = connect()
+    for user in all_users:
+        if user['attributes']['extensionAttribute1']:
+            print(user['attributes']['extensionAttribute1'])
+            print(conn.modify(user['attributes']['distinguishedName'], {'extensionAttribute1': (
+                MODIFY_REPLACE, [str(3) + user['attributes']['telephoneNumber']])}))
+    conn.unbind()
 
 
 def search_user(user):
@@ -61,13 +99,6 @@ def search_users_in_group(group):
     return userDN
 
 
-#ou = ['computers', 'domain computers', 'Domain Controllers', 'Domain Servers']
-ou = ['domain computers']
-# 212  LockedAccounts   154 without LockedAccounts
-res = {}
-oper_sys = []
-
-
 def search_os():
     """ Поиск os по AD """
     conn = connect()
@@ -103,12 +134,4 @@ def search_os():
 
 
 if __name__ == '__main__':
-    b = []
-    all_vpn_users = search_users_in_group('Users_VPN')
-    for user in all_vpn_users:
-        if 'OU=_Retired' not in user:
-            # a = user.find(',')
-            b.append((user))
-            # search_email_user(user)
-    # print(b)
-    search_email_user(b)
+    all = search_ext1_all()

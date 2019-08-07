@@ -9,7 +9,7 @@ domainName = 'icore'
 
 def logging():
     userName = 'python'
-    password = '123456Qq'
+    password = 'sdfsdf'
 
     if '@' in userName:
         return userName[:userName.index('@')], password
