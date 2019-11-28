@@ -41,7 +41,7 @@ def search_ext1_all():
     all_user = None
     search_filter = f'(&(objectClass=user))'
     x = conn.search(base, search_filter, attributes=[
-                    'extensionAttribute1', 'distinguishedName', 'telephoneNumber'])
+                    'extensionAttribute1', 'distinguishedName', 'telephoneNumber', 'ipPhone'])
     if x != False:
         all_user = (conn.response)
     conn.unbind()
@@ -52,10 +52,28 @@ def replace_attribute(all_users):
     """ Принимает список юзеров с их атрибутами (search_ext1_all) и заменяет определенные """
     conn = connect()
     for user in all_users:
-        if user['attributes']['extensionAttribute1']:
+        # if user['attributes']['extensionAttribute1']:
+        try:
             print(user['attributes']['extensionAttribute1'])
             print(conn.modify(user['attributes']['distinguishedName'], {'extensionAttribute1': (
-                MODIFY_REPLACE, [str(3) + user['attributes']['telephoneNumber']])}))
+                MODIFY_REPLACE, [str(3) + str(user['attributes']['telephoneNumber'])])}))
+        except Exception as e:
+            pprint(e)
+
+    conn.unbind()
+
+
+def replace_ip_phone_attribute(all_users):
+    """ Принимает список юзеров с их атрибутами (ip_phone) и заменяет определенные """
+    conn = connect()
+    for user in all_users:
+        try:
+            print(user['attributes']['ipPhone'])
+            print(conn.modify(user['attributes']['distinguishedName'], {'ipPhone': (
+                MODIFY_REPLACE, [str(1) + str(user['attributes']['telephoneNumber'])])}))
+        except Exception as e:
+            pprint(e)
+
     conn.unbind()
 
 
@@ -134,4 +152,6 @@ def search_os():
 
 
 if __name__ == '__main__':
-    all = search_ext1_all()
+    # all = search_ext1_all()
+    pprint(all)
+    # replace_ip_phone_attribute(all)
