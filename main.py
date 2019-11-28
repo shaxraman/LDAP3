@@ -39,7 +39,7 @@ def search_ext1_all():
     """ Ищет всех пользователей и выводит их атрибуты"""
     conn = connect()
     all_user = None
-    search_filter = f'(&(objectClass=user))'
+    search_filter = f'(&(objectClass=user)(msDS-parentdistname=OU=Domain Users,DC=icore,DC=local))'  # f'(&(objectClass=user)(msDS-parentdistname=OU=Domain Users,DC=icore,DC=local))'  f'(&(objectClass=user))'
     x = conn.search(base, search_filter, attributes=[
                     'extensionAttribute1', 'distinguishedName', 'telephoneNumber', 'ipPhone'])
     if x != False:
@@ -52,11 +52,11 @@ def replace_attribute(all_users):
     """ Принимает список юзеров с их атрибутами (search_ext1_all) и заменяет определенные """
     conn = connect()
     for user in all_users:
-        # if user['attributes']['extensionAttribute1']:
         try:
-            print(user['attributes']['extensionAttribute1'])
-            print(conn.modify(user['attributes']['distinguishedName'], {'extensionAttribute1': (
-                MODIFY_REPLACE, [str(3) + str(user['attributes']['telephoneNumber'])])}))
+            if user['attributes']['telephoneNumber']:
+                print(user['attributes']['extensionAttribute1'])
+                print(conn.modify(user['attributes']['distinguishedName'], {'extensionAttribute1': (
+                    MODIFY_REPLACE, [str(3) + str(user['attributes']['telephoneNumber'])])}))
         except Exception as e:
             pprint(e)
 
@@ -68,9 +68,10 @@ def replace_ip_phone_attribute(all_users):
     conn = connect()
     for user in all_users:
         try:
-            print(user['attributes']['ipPhone'])
-            print(conn.modify(user['attributes']['distinguishedName'], {'ipPhone': (
-                MODIFY_REPLACE, [str(1) + str(user['attributes']['telephoneNumber'])])}))
+            if user['attributes']['telephoneNumber']:
+                print(user['attributes']['ipPhone'])
+                print(conn.modify(user['attributes']['distinguishedName'], {'ipPhone': (
+                    MODIFY_REPLACE, [str(1) + str(user['attributes']['telephoneNumber'])])}))
         except Exception as e:
             pprint(e)
 
@@ -152,6 +153,7 @@ def search_os():
 
 
 if __name__ == '__main__':
-    # all = search_ext1_all()
-    pprint(all)
-    # replace_ip_phone_attribute(all)
+    all = search_ext1_all()
+    # pprint(all)
+    replace_ip_phone_attribute(all)
+    replace_attribute(all)
